@@ -1,95 +1,48 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
+import "./styles.css"
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  return (Game());
+}
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+function Game() {
+  const [player1Turn, setPlayer1Turn] = useState<boolean>(true);
+  const [boardState, setBoardState] = useState<number[][]>(Array(7).fill(0).map(()=>Array(6).fill(0)));
+  function playTurn(colNum:number){
+    for (let i = 0; i<boardState[colNum].length; i++){
+      if (boardState[colNum][i] == 0) {
+        setBoardState((prevBoardState)=>{
+          const newBoardState = [...prevBoardState];
+          newBoardState[colNum][i] = player1Turn ? 1 : 2;
+          return newBoardState;
+        })
+        setPlayer1Turn((player1Turn)=>!player1Turn)
+        break;
+      }
+    }
+  }
+  return <div className="game-container"><Board boardState={boardState} playTurn={playTurn}></Board></div>
+}
+
+function Board({boardState, playTurn}:{boardState:number[][], playTurn:(colNum:number)=>void}) {
+  const cols = boardState.map((columnState, colNum)=><Column columnState={columnState} key={colNum} playColumn={()=>playTurn(colNum)}></Column>)
+  console.log(cols.toString());
+  return <div className="board">{cols}</div>
+}
+
+function Column({columnState, playColumn}:{columnState: number[], playColumn: ()=>void}) {
+  const slots = columnState.map((slotState, slotNum)=><Slot slotState={slotState} key={slotNum}></Slot>)
+  return <div className="column" onClick={playColumn}>{slots}</div>
+}
+
+function Slot({slotState}:{slotState: number}) {
+  var className = "slot"
+  if (slotState == 1){
+    className += " player1"
+  } else if (slotState == 2){
+    className += " player2"
+  }
+  return <div className={className}>{}</div>
 }
