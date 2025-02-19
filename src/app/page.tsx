@@ -7,7 +7,7 @@ export default function Home() {
   return (Game());
 }
 
-enum gameResultEnums{
+enum gameResultEnum{
   InProgress,
   Draw,
   Player1Win,
@@ -16,8 +16,9 @@ enum gameResultEnums{
 
 function Game() {
   const [gameHistory, setGameHistory] = useState<number[][][]>([Array(7).fill(0).map(()=>Array(6).fill(0))]);
+  const [moveHistory, setMoveHistory] = useState<number[]>([]);
   const [currentPly, setCurrentPly] = useState<number>(0);
-  const [gameResult, setGameResult] = useState<gameResultEnums>(gameResultEnums.InProgress);
+  const [gameResult, setGameResult] = useState<gameResultEnum>(gameResultEnum.InProgress);
   function checkWin(boardState: number[][], col:number, row:number){
     const player = boardState[col][row];
     // Vertical
@@ -57,7 +58,7 @@ function Game() {
     return false;
   }
   function playTurn(colNum:number){
-    if (gameResult != gameResultEnums.InProgress){
+    if (gameResult != gameResultEnum.InProgress && currentPly == moveHistory.length){
       return;
     }
     const boardState = gameHistory[currentPly];
@@ -66,28 +67,51 @@ function Game() {
       if (boardState[colNum][i] == 0) {
         setGameHistory((prevGameHistory)=>{ 
           const newGameHistory = prevGameHistory.slice(0,currentPly+1);
-          const newBoardState = [...prevGameHistory[currentPly]];
+          const newBoardState = structuredClone(prevGameHistory[currentPly]);
           newBoardState[colNum][i] = player1Turn ? 1 : 2;
           newGameHistory.push(newBoardState);
           if (checkWin(newBoardState, colNum, i)){
             if (player1Turn){
-              setGameResult(gameResultEnums.Player1Win);
+              setGameResult(gameResultEnum.Player1Win);
             } else {
-              setGameResult(gameResultEnums.Player2Win);
+              setGameResult(gameResultEnum.Player2Win);
             }
           } else {
             if (currentPly == 6 * 7 - 1){
-              setGameResult(gameResultEnums.Draw)
+              setGameResult(gameResultEnum.Draw);
+            } else {
+              setGameResult(gameResultEnum.InProgress);
             }
           }
           return newGameHistory;
+        })
+        setMoveHistory((prevMoveHistory)=>{
+          const newMoveHistory = prevMoveHistory.slice(0, currentPly);
+          newMoveHistory.push(colNum);
+          return newMoveHistory;
         })
         setCurrentPly((currentPly)=>currentPly+1);
         break;
       }
     }
   }
-  return <div className="game-container"><Board boardState={gameHistory.at(-1)!} playTurn={playTurn}></Board></div>
+  function gotoMoveGuarded(ply:number){
+    if (ply < 0 || ply >= gameHistory.length){
+      return
+    }
+    setCurrentPly(ply)
+  }
+  return (
+    <div className="game-container">
+      <div className="game-ui">
+        <GameStatus gameResult={gameResult} player1Turn={!(currentPly%2)} finalPly={currentPly==moveHistory.length}></GameStatus>
+        <div className="game-board-and-history">
+          <Board boardState={gameHistory[currentPly]} playTurn={playTurn}></Board>
+          <GameHistory gotoMove={gotoMoveGuarded} moveHistory={moveHistory} currentPly={currentPly}></GameHistory>
+        </div>
+      </div>
+    </div>
+    )
 }
 
 function Board({boardState, playTurn}:{boardState:number[][], playTurn:(colNum:number)=>void}) {
@@ -108,4 +132,50 @@ function Slot({slotState}:{slotState: number}) {
     className += " player2"
   }
   return <div className={className}>{}</div>
+}
+
+function GameStatus({gameResult, player1Turn, finalPly}:{gameResult:gameResultEnum, player1Turn:boolean, finalPly:boolean}){
+  const playerTurn = player1Turn ? "Red's Turn":"Yellow's Turn";
+
+  const text = (!finalPly || gameResult === gameResultEnum.InProgress) ? 
+    playerTurn
+    : (gameResult == gameResultEnum.Draw) ? "Draw"
+    : (gameResult == gameResultEnum.Player1Win) ? "Red Wins"
+    : "Yellow Wins";
+  
+  return <div className="game-status">{text}</div>
+}
+
+function GameHistory({gotoMove, moveHistory, currentPly}:{gotoMove:(move:number)=>void, moveHistory:number[], currentPly:number}){
+  const pairedMoves = moveHistory.reduce((previousValue:number[][], currentValue, currentIndex)=>{
+    if (currentIndex % 2 == 0){
+      previousValue.push([currentValue+1])
+    } else {
+      previousValue[previousValue.length-1].push(currentValue+1)
+    }
+    return previousValue
+  }, [])
+
+
+  return <div className="game-history">
+    <div className="control-panel">
+      <button onClick={()=>gotoMove(0)}>&lt;&lt;</button>
+      <button onClick={()=>gotoMove(currentPly-1)}>&lt;</button>
+      <button onClick={()=>gotoMove(currentPly+1)}>&gt;</button>
+      <button onClick={()=>gotoMove(moveHistory.length)}>&gt;&gt;</button>
+    </div>
+    <table>
+      <tbody>
+        {
+          pairedMoves.map((pair, index)=>{
+            return <tr key={index}>
+              <th onClick={()=>gotoMove(2*index)}>{index+1}</th>
+              <td onClick={()=>gotoMove(2*index + 1)}>{pair[0]}</td>
+              <td onClick={()=>gotoMove(2*index + 2)}>{pair.length == 2 && pair[1]}</td>
+            </tr>
+          })
+        }
+      </tbody>
+    </table>
+  </div>
 }
