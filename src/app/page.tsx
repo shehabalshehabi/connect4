@@ -169,13 +169,15 @@ function GameHistory({gotoMove, moveHistory, currentPly}:{gotoMove:(move:number)
         {
           pairedMoves.length>0 ?
           pairedMoves.map((pair, index)=>{
+            const td1class = (currentPly == 2*index+1) ? "current-move" : "";
+            const td2class = (currentPly == 2*index+2) ? "current-move" : "";
             return <tr key={index}>
               <th onClick={()=>gotoMove(2*index)}>{index+1}</th>
-              <td onClick={()=>gotoMove(2*index + 1)}>{pair[0]}</td>
-              <td onClick={()=>gotoMove(2*index + 2)}>{pair.length == 2 && pair[1]}</td>
+              <td onClick={()=>gotoMove(2*index + 1)} className={td1class}>{pair[0]}</td>
+              <td onClick={()=>gotoMove(2*index + 2)} className={td2class}>{pair.length == 2 && pair[1]}</td>
             </tr>
           }) : 
-          <tr key={1}>
+          <tr>
             <th>1</th>
             <td></td>
             <td></td>

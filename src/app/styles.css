@@ -72,7 +72,11 @@
   background-color: #0071D9;
 }
 
-.game-history tr:hover{
+.game-history td:hover{
+  background-color: #339DFF ;
+}
+
+.current-move{
   background-color: #0066cc;
 }
 
