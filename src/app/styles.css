@@ -64,6 +64,10 @@
   width: 10%;
 }
 
+.game-history td {
+  width: 45%;
+}
+
 .game-history tr:nth-child(even) {
   background-color: #0071D9;
 }

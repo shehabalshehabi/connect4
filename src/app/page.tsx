@@ -167,13 +167,19 @@ function GameHistory({gotoMove, moveHistory, currentPly}:{gotoMove:(move:number)
     <table>
       <tbody>
         {
+          pairedMoves.length>0 ?
           pairedMoves.map((pair, index)=>{
             return <tr key={index}>
               <th onClick={()=>gotoMove(2*index)}>{index+1}</th>
               <td onClick={()=>gotoMove(2*index + 1)}>{pair[0]}</td>
               <td onClick={()=>gotoMove(2*index + 2)}>{pair.length == 2 && pair[1]}</td>
             </tr>
-          })
+          }) : 
+          <tr key={1}>
+            <th>1</th>
+            <td></td>
+            <td></td>
+          </tr>
         }
       </tbody>
     </table>
