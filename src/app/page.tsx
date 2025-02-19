@@ -26,11 +26,11 @@ function Game() {
       if (i < 0){
         break;
       }
+      if (boardState[col][i] != player){
+        break;
+      }
       if (i == row){
         return true
-      }
-      if (boardState[col][row] != player){
-        break;
       }
     }
 
