@@ -18,14 +18,14 @@
 .game-board-and-history {
     display: flex;
     flex-direction: row;
+    height: 30vw;
 }
 
 .board {
     display: flex;
     flex-direction: row;
-    width: 70vw; /* Adjust width as needed */
-    max-width: 560px; /* Optional: to cap the size */
     aspect-ratio: 7 / 6;
+    align-items: flex-start;
     background-color: #0074cc;
     border-radius: 10px;
     padding: 10px;
@@ -46,11 +46,15 @@
 
 
 .game-history {
+  flex-grow: 1;
   color: 0074cc;
   background-color: #007BFF;
   border-radius: 10px;
   margin-left: 10px;
   color: white;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .game-history th, .game-history td {
@@ -62,10 +66,6 @@
 
 .game-history th {
   width: 10%;
-}
-
-.game-history td {
-  width: 45%;
 }
 
 .game-history tr:nth-child(even) {
@@ -106,6 +106,7 @@
     justify-content: space-evenly;
     align-items: center;
     cursor: pointer;
+    height: fit-content;
 }
 
 .slot {
