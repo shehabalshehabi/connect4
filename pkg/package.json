@@ -1,0 +1,15 @@
+{
+  "name": "connect4engine",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "connect4engine_bg.wasm",
+    "connect4engine.js",
+    "connect4engine.d.ts"
+  ],
+  "main": "connect4engine.js",
+  "types": "connect4engine.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

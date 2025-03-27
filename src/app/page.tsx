@@ -1,10 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./styles.css"
+import init, { c4engine, greet } from "@/../pkg/connect4engine";
 
 export default function Home() {
-  return (Game());
+  const [engineReady, setEngineReady] = useState<boolean>(false);
+  useEffect(()=>{(async() => {
+    await init({
+        global: {},
+        env: {
+          memory: new WebAssembly.Memory({
+            initial: 10000,
+            maximum: 65536,
+          })
+        }
+      });
+      setEngineReady(true);
+    })()
+  }, []);
+  return <Game engineReady={engineReady} enginep1={false} enginep2={true}></Game>;
 }
 
 enum gameResultEnum{
@@ -14,11 +29,26 @@ enum gameResultEnum{
   Player2Win,
 }
 
-function Game() {
+function Game({engineReady, enginep1, enginep2}:{engineReady:any, enginep1:boolean, enginep2:boolean}) {
   const [gameHistory, setGameHistory] = useState<number[][][]>([Array(7).fill(0).map(()=>Array(6).fill(0))]);
   const [moveHistory, setMoveHistory] = useState<number[]>([]);
   const [currentPly, setCurrentPly] = useState<number>(0);
   const [gameResult, setGameResult] = useState<gameResultEnum>(gameResultEnum.InProgress);
+  
+  useEffect(()=>{
+    //engineReady && console.log(c4engine(moveHistory.toString()));
+  }, [engineReady, moveHistory])
+  useEffect(()=>{
+    if (moveHistory.length % 2 == 0){
+      if (enginep1){
+        playBestMove();
+      }
+    } else {
+      if (enginep2){
+        playBestMove();
+      }
+    }
+  }, [engineReady, moveHistory])
   function checkWin(boardState: number[][], col:number, row:number){
     const player = boardState[col][row];
     // Vertical
@@ -56,6 +86,25 @@ function Game() {
       }
     }
     return false;
+  }
+  function playBestMove(){
+    if (!engineReady || (gameResult != gameResultEnum.InProgress)) {
+      return;
+    }
+    let bestMove = -1;
+    let bestScore = -127;
+    for (let i=0; i<=6; i++){
+      const moves = moveHistory + i.toString();
+      const engine_eval = c4engine(moves);
+      const move_score = engine_eval == -128 ? -128 : -engine_eval 
+
+      console.log("move_number", Math.floor(moveHistory.length/2)+1, "col=", i, "score=", move_score);
+      if (move_score > bestScore){
+        bestMove = i;
+        bestScore = move_score;
+      }
+    }
+    playTurn(bestMove);
   }
   function playTurn(colNum:number){
     if (gameResult != gameResultEnum.InProgress && currentPly == moveHistory.length){
