@@ -19,7 +19,7 @@ export default function Home() {
       setEngineReady(true);
     })()
   }, []);
-  return <Game engineReady={engineReady} enginep1={false} enginep2={true}></Game>;
+  return <Game engineReady={engineReady}></Game>;
 }
 
 enum gameResultEnum{
@@ -29,26 +29,52 @@ enum gameResultEnum{
   Player2Win,
 }
 
-function Game({engineReady, enginep1, enginep2}:{engineReady:any, enginep1:boolean, enginep2:boolean}) {
+function Game({engineReady}:{engineReady:any}) {
   const [gameHistory, setGameHistory] = useState<number[][][]>([Array(7).fill(0).map(()=>Array(6).fill(0))]);
   const [moveHistory, setMoveHistory] = useState<number[]>([]);
   const [currentPly, setCurrentPly] = useState<number>(0);
   const [gameResult, setGameResult] = useState<gameResultEnum>(gameResultEnum.InProgress);
+  const [engineP1, setEngineP1] = useState<boolean>(false);
+  const [engineP2, setEngineP2] = useState<boolean>(false);
+  const [showEvalBar, setShowEvalBar] = useState<boolean>(false);
+  const [showMoveEvals, setShowMoveEvals] = useState<boolean>(false);
+  const [moveEvals, setMoveEvals] = useState<number[]>(Array(7).fill(0));
+  const [redEval, setRedEval] = useState<number>(50);
+  const engineProps = {
+    engineP1, setEngineP1, engineP2, setEngineP2, showEvalBar, setShowEvalBar, showMoveEvals, setShowMoveEvals
+  }
   
   useEffect(()=>{
-    //engineReady && console.log(c4engine(moveHistory.toString()));
-  }, [engineReady, moveHistory])
+    if (engineReady && showMoveEvals){
+      const moveEvals = Array(7).fill(0);
+      const moveHistoryToCurrentPly = moveHistory.slice(0, currentPly);
+      for (let i=0; i<=6; i++){
+        const moves = moveHistoryToCurrentPly + i.toString();
+        const engine_eval = -c4engine(moves);
+        moveEvals[i]=engine_eval;
+      }
+      setMoveEvals(moveEvals);
+    }
+  }, [engineReady, moveHistory, showMoveEvals, currentPly])
+  useEffect(()=>{
+    if (engineReady && showEvalBar){
+      const moveHistoryToCurrentPly = moveHistory.slice(0, currentPly);
+      const engineEval = c4engine(moveHistoryToCurrentPly.toString());
+      const redEngineEval = moveHistoryToCurrentPly.length%2==0 ? engineEval : -engineEval
+      setRedEval((redEngineEval + 22)*100/44)
+    }
+  }, [engineReady, moveHistory, showEvalBar, currentPly])
   useEffect(()=>{
     if (moveHistory.length % 2 == 0){
-      if (enginep1){
+      if (engineP1){
         playBestMove();
       }
     } else {
-      if (enginep2){
+      if (engineP2){
         playBestMove();
       }
     }
-  }, [engineReady, moveHistory])
+  }, [engineReady, moveHistory, engineP1, engineP2])
   function checkWin(boardState: number[][], col:number, row:number){
     const player = boardState[col][row];
     // Vertical
@@ -155,22 +181,55 @@ function Game({engineReady, enginep1, enginep2}:{engineReady:any, enginep1:boole
       <div className="game-ui">
         <GameStatus gameResult={gameResult} player1Turn={!(currentPly%2)} finalPly={currentPly==moveHistory.length}></GameStatus>
         <div className="game-board-and-history">
-          <Board boardState={gameHistory[currentPly]} playTurn={playTurn}></Board>
+          {showEvalBar && <EvalBar red={redEval}></EvalBar>}
+          <Board boardState={gameHistory[currentPly]} playTurn={playTurn} moveEvals={moveEvals} showMoveEvals={showMoveEvals}></Board>
           <GameHistory gotoMove={gotoMoveGuarded} moveHistory={moveHistory} currentPly={currentPly}></GameHistory>
         </div>
+        <EngineControls {...engineProps}></EngineControls>
       </div>
     </div>
     )
 }
 
-function Board({boardState, playTurn}:{boardState:number[][], playTurn:(colNum:number)=>void}) {
-  const cols = boardState.map((columnState, colNum)=><Column columnState={columnState} key={colNum} playColumn={()=>playTurn(colNum)}></Column>)
+function Board({boardState, playTurn, moveEvals, showMoveEvals}:{boardState:number[][], playTurn:(colNum:number)=>void, moveEvals:number[], showMoveEvals:boolean}) {
+  const cols = boardState.map((columnState, colNum)=><Column columnState={columnState} key={colNum} playColumn={()=>playTurn(colNum)}
+                                                      moveEval={moveEvals[colNum]} showMoveEvals={showMoveEvals}></Column>)
   return <div className="board">{cols}</div>
 }
 
-function Column({columnState, playColumn}:{columnState: number[], playColumn: ()=>void}) {
+function Column({columnState, playColumn, moveEval, showMoveEvals}
+  :{columnState: number[], playColumn: ()=>void, moveEval:number, showMoveEvals:boolean}) {
   const slots = columnState.map((slotState, slotNum)=><Slot slotState={slotState} key={slotNum}></Slot>)
-  return <div className="column" onClick={playColumn}>{slots}</div>
+  return <div className="column" onClick={playColumn}>{slots}{showMoveEvals && <>{moveEval}</>}</div>
+}
+
+function EvalBar({red}:{red:number}){
+  const redStyle = {
+    height: red.toString()+"%",
+  };
+  const yellowStyle = {
+    height: (100-red).toString()+"%",
+  };
+  return <div className="eval-bar">
+    <div className="yellow-eval" style={yellowStyle}></div>
+    <div className="red-eval" style={redStyle}></div>
+  </div>
+}
+
+type setter = React.Dispatch<React.SetStateAction<boolean>>
+function EngineControls({engineP1, setEngineP1, engineP2, setEngineP2, showEvalBar, setShowEvalBar, showMoveEvals, setShowMoveEvals}
+  :{engineP1:boolean, setEngineP1:setter, engineP2:boolean, setEngineP2:setter,
+    showEvalBar:boolean, setShowEvalBar:setter, showMoveEvals:boolean, setShowMoveEvals:setter}){
+  const engineP1Button = <button onClick={()=>setEngineP1((prevState)=>!prevState)}
+                          className={engineP1 ? "activated":"deactivated"}>Engine Player 1</button>
+  const engineP2Button = <button onClick={()=>setEngineP2((prevState)=>!prevState)}
+                          className={engineP2 ? "activated":"deactivated"}>Engine Player 2</button>
+  const showMoveEvalsButton = <button onClick={()=>setShowMoveEvals((prevState)=>!prevState)}
+                          className={showMoveEvals ? "activated":"deactivated"}>Show Move Evals</button>
+  const showEvalBarButton = <button onClick={()=>setShowEvalBar((prevState)=>!prevState)}
+                          className={showEvalBar ? "activated":"deactivated"}>Show Eval Bar</button>
+
+  return <div className="engine-controls">{engineP1Button}{engineP2Button}{showMoveEvalsButton}{showEvalBarButton}</div>
 }
 
 function Slot({slotState}:{slotState: number}) {

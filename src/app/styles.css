@@ -19,13 +19,15 @@
     display: flex;
     flex-direction: row;
     height: 30vw;
+    gap: 10px;
 }
 
 .board {
     display: flex;
     flex-direction: row;
+    height: 100%;
     aspect-ratio: 7 / 6;
-    align-items: flex-start;
+    align-items: center;
     background-color: #0074cc;
     border-radius: 10px;
     padding: 10px;
@@ -46,11 +48,12 @@
 
 
 .game-history {
+  height: 100%;
+  width: 90%;
   flex-grow: 1;
   color: 0074cc;
   background-color: #007BFF;
   border-radius: 10px;
-  margin-left: 10px;
   color: white;
   display: flex;
   flex-direction: column;
@@ -111,6 +114,7 @@
     align-items: center;
     cursor: pointer;
     height: fit-content;
+    color: #fff;
 }
 
 .slot {
@@ -133,4 +137,42 @@
 
 .column:hover .slot:not(.player1):not(.player2) {
     background-color: rgba(255, 255, 255, 0.6);
+}
+
+.eval-bar{
+  width: 10%;
+  height: 100%;
+  border-radius: 10%;
+}
+
+.red-eval{
+  background-color: #ff4136;
+}
+
+.yellow-eval{
+  background-color: #ffdc00;
+}
+
+.engine-controls{
+  width: 100%;
+  background-color: #0074cc;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  margin-top: 30px;
+  gap: 10px;
+  padding: 5px;
+}
+
+button{
+  border-radius: 5px;
+}
+
+button.activated{
+  background-color:#0056b3;
+}
+button.deactivated{
+  background-color:#339DFF;
 }
