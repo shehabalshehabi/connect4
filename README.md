@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is an interface for a Connect 4 Solver that I created. It strongly solves the game from the starting position in under 10 minutes without an opening book. The engine has access to a 12-ply opening book that enables it to return an answer in milliseconds allowing for real time play.
 
-## Getting Started
+## Usage
 
-First, run the development server:
+This is a simple connect 4 interface that allows you to go back and change previous moves. The control panel at the bottom has 4 options.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Engine Player 1: Have the engine play automatically for the first player.
+- Engine Player 2: Have the engine play automatically for the second player.
+- Toggle Move Evals: See how each different move scores for the current player - the higher the evaluation the better.
+- Toggle Eval Bar: Enable an evaluation bar at the side to show which player currently has an advantage.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Evaluations explained.
+An evaluation of 0 means that the game should end in a draw with perfect play. A positive score such as +3 denotes a win that many turns before the game ends e.g. +1 means a win on the players last turn; +2 denotes a win the turn before that and so on. A negative evaluation indicates that your opponent can force a win.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In chess, an evaluation bar typically shows a solid colour when a forced win or draw is found. As this engine can solve the game from the first move, I have chosen not to do this in order to better reflect when a suboptimal move is played.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Building
+Use ``` npm run build ``` in order to create a static output page for github pages.
 
-## Learn More
+## Acknowledgements
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The iterative deepening strategy is due to Pascal Pons. The opening book was created by Markus Thill and I have corrected the mistakes in it pointed out by ddrhoardarmer.
