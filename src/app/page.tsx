@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import "./styles.css"
-import init, { c4engine, greet } from "@/../pkg/connect4engine";
+import init, { c4engine } from "@/../pkg/connect4engine";
 
 export default function Home() {
   const [engineReady, setEngineReady] = useState<boolean>(false);
@@ -29,7 +29,7 @@ enum gameResultEnum{
   Player2Win,
 }
 
-function Game({engineReady}:{engineReady:any}) {
+function Game({engineReady}:{engineReady:boolean}) {
   const [gameHistory, setGameHistory] = useState<number[][][]>([Array(7).fill(0).map(()=>Array(6).fill(0))]);
   const [moveHistory, setMoveHistory] = useState<number[]>([]);
   const [currentPly, setCurrentPly] = useState<number>(0);
@@ -90,8 +90,8 @@ function Game({engineReady}:{engineReady:any}) {
       }
     }
 
-    var run = 0;
-    var x, y = 0;
+    let run = 0;
+    let x, y = 0;
     for (let vertdelta=-1; vertdelta<=1; vertdelta++){
       run = 0;
       for (let delta=-3; delta<=3; delta++){
@@ -233,7 +233,7 @@ function EngineControls({engineP1, setEngineP1, engineP2, setEngineP2, showEvalB
 }
 
 function Slot({slotState}:{slotState: number}) {
-  var className = "slot"
+  let className = "slot"
   if (slotState == 1){
     className += " player1"
   } else if (slotState == 2){
